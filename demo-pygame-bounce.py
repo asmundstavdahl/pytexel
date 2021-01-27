@@ -52,6 +52,10 @@ while True:
         pos[0] + v[0],
         pos[1] + v[1],
     )
+    pos = (
+        max(0 + ballRadius, min(displaySize[0] - ballRadius, pos[0])),
+        max(0 + ballRadius, min(displaySize[1] - ballRadius, pos[1])),
+    )
     if pos[0] + v[0]*dt + ballRadius > displaySize[0] or pos[0] + v[0]*dt - ballRadius < 0:
         v = (
             -v[0],
@@ -62,6 +66,8 @@ while True:
             v[0],
             -v[1],
         )
+
+
 
     # Drawing
     draw.circle(display, CFg, (
