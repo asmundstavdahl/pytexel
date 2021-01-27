@@ -3,13 +3,16 @@
 from PIL import Image, ImageEnhance
 import hashlib
 
-from texel import Texel
+from .texel import Texel
+
+import pathlib
+thidDir = pathlib.Path(__file__).parent.absolute()
 
 
 class Texelator:
     def __init__(self):
         CHARS = """ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
-        image: Image.Image = Image.open("./ascii.png").convert("L")
+        image: Image.Image = Image.open(f"{thidDir}/ascii.png").convert("L")
         self.charWidth = 7
         self.charHeight = 14
 
