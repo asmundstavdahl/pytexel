@@ -4,6 +4,7 @@ import cProfile
 from PIL import Image, ImageEnhance
 import hashlib
 
+__version__ = 'dev'
 
 def diffListOfInt(l1: list, l2: list) -> int:
     return sum(abs(i1 - i2) for i1, i2 in zip(l1, l2))
