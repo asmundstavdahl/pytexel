@@ -8,10 +8,13 @@ from .texel import Texel
 import pathlib
 thidDir = pathlib.Path(__file__).parent.absolute()
 
+# Characters used for ASCII rendering
+CHARS = r""" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
+
 
 class Texelator:
     def __init__(self):
-        CHARS = r""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
+
         image: Image.Image = Image.open(f"{thidDir}/ascii.png").convert("L")
         self.charWidth = 7
         self.charHeight = 14

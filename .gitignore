@@ -1,3 +1,6 @@
 __pycache__/
 .venv
 .venv_test/
+tileCache.pkl
+profile
+out.txt
