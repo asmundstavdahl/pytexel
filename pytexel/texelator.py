@@ -1,7 +1,10 @@
 
 # %%
 from PIL import Image, ImageEnhance
-import hashlib
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 from .texel import Texel
 
@@ -29,48 +32,51 @@ class Texelator:
                           width=chim.width, height=chim.height)
             self.texels.append(texel)
 
-        # hash to resulting character
+        if np is not None:
+            self._texel_pixels = np.array([t.pixels for t in self.texels], dtype=np.int16)
+            self._texel_chars = [t.char for t in self.texels]
+        # cache for mapping tile patterns to characters
         self.tileCache: dict = self.loadTileCache()
 
     def render(self, image: Image.Image, width: int, height: int) -> str:
-        image2: Image.Image = image.resize((width * self.charWidth,
-                                            height * self.charHeight))
+        image2 = image.resize((width * self.charWidth, height * self.charHeight))
         image2 = image2.convert("L")
-        tileRows = []
+        if np is not None:
+            arr = np.asarray(image2, dtype=np.int16)
+            arr = arr.reshape((height, self.charHeight, width, self.charWidth))
+            arr = arr.transpose(0, 2, 1, 3)
+            arr = arr.reshape((height, width, self.charHeight * self.charWidth))
+            lines = []
+            for row in arr:
+                diff = np.abs(row[:, None, :] - self._texel_pixels[None, :, :])
+                costs = diff.sum(axis=2)
+                best = np.argmin(costs, axis=1)
+                lines.append(''.join(self._texel_chars[idx] for idx in best))
+            return '\n'.join(lines)
+
+        lines = []
         for y in range(height):
-            tiles = []
+            line_chars = []
             for x in range(width):
                 tileBox = (
-                    x*self.charWidth,
-                    y*self.charHeight,
-                    (x+1)*self.charWidth,
-                    (y+1)*self.charHeight,
+                    x * self.charWidth,
+                    y * self.charHeight,
+                    (x + 1) * self.charWidth,
+                    (y + 1) * self.charHeight,
                 )
                 tile = image2.crop(tileBox).getdata(0)
-                tiles.append(tile)
-            tileRows.append(tiles)
+                line_chars.append(self.getFittest(tile))
+            lines.append(''.join(line_chars))
+        return '\n'.join(lines)
 
-        output: str = ""
-        for tiles in tileRows:
-            for tile in tiles:
-                char = self.getFittest(tile)
-                output += char
-            output += "\n"
+    def getFittest(self, tile) -> str:
+        key = bytes(tile)
+        if key in self.tileCache:
+            return self.tileCache[key]
 
-        return output
-
-    def getFittest(self, tile: Image.Image) -> str:
-        hash = hashlib.md5(bytes(tile)).digest()
-        if hash in self.tileCache:
-            return self.tileCache[hash]
-
-        fitnesses = [(tx.char, tx.rateFitnessOfPixels(tile))
-                     for tx in self.texels]
-        fitnesses.sort(key=lambda tx: tx[1])
-
-        result = fitnesses.pop()[0]
-
-        self.tileCache[hash] = result
+        best = max(self.texels, key=lambda tx: tx.rateFitnessOfPixels(tile))
+        result = best.char
+        self.tileCache[key] = result
         return result
 
     def saveTileCache(self):

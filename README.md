@@ -7,7 +7,7 @@ and supports both static image conversion and live terminal demos.
 ## Features
 
 - Pixel-accurate ASCII art rendering using Pillow for image processing.
-- MD5-hash-based tile caching for fast repeated conversions (`tileCache.pkl`).
+- Tile-based caching for fast repeated conversions (`tileCache.pkl`).
 - Command-line tools (`texelate.py` and `texelate.sh`) for quick one-off conversions.
 - Python API via `Texelator` and `Texel` classes for integration into custom scripts.
 - Live Pygame-based demos for animated ASCII output.
