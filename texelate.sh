@@ -10,7 +10,7 @@ then
 else
     for img in $@
     do
-        python texelate.py --width $(tput cols) --height $(tput lines) "$img"
+        python3 texelate.py --width $(tput cols) --height $(tput lines) "$img"
         # --width $(tput cols) --height $(tput lines)
     done
 fi

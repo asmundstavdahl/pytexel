@@ -6,7 +6,7 @@ from pygame import draw
 import numpy as np
 import time
 from PIL import Image
-from texelator import Texelator
+from pytexel.texelator import Texelator
 
 texelator: Texelator = Texelator()
 

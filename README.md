@@ -20,17 +20,16 @@ Requires Python 3.6+ and the following Python packages:
 - [Pillow](https://pypi.org/project/Pillow/) (image processing)
 - [pygame](https://pypi.org/project/pygame/) and [numpy](https://pypi.org/project/numpy/) (for demos)
 
-Install dependencies with pip:
+Install pytexel as a library from PyPI or from source:
 
 ```bash
-pip install Pillow pygame numpy
-```
+# Install the latest release from PyPI
+pip install pytexel
 
-Then clone this repository and enter its directory:
-
-```bash
+# Or install from local source
 git clone <repository-url>
 cd pytexel
+pip install .
 ```
 
 ## Quickstart

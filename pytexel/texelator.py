@@ -1,30 +1,18 @@
 
 # %%
-import cProfile
 from PIL import Image, ImageEnhance
 import hashlib
 
+from .texel import Texel
 
-def diffListOfInt(l1: list, l2: list) -> int:
-    return sum(abs(i1 - i2) for i1, i2 in zip(l1, l2))
-
-
-class Texel:
-    def __init__(self, char: str, pixels: list, width: int, height: int):
-        self.char = char
-        self.pixels = pixels
-        self.width = width
-        self.height = height
-
-    def rateFitnessOfPixels(self, pixels: list) -> float:
-        mismatch = diffListOfInt(pixels, self.pixels)
-        return 1.0 / (1 + mismatch)
+import pathlib
+thidDir = pathlib.Path(__file__).parent.absolute()
 
 
 class Texelator:
     def __init__(self):
-        CHARS = """ !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
-        image: Image.Image = Image.open("./ascii.png").convert("L")
+        CHARS = r""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
+        image: Image.Image = Image.open(f"{thidDir}/ascii.png").convert("L")
         self.charWidth = 7
         self.charHeight = 14
 
@@ -96,43 +84,3 @@ class Texelator:
         except FileNotFoundError:
             print("tileCache.pkl not found - starting clean")
             return {}
-
-# %%
-
-
-def renderImagesFromArgs(width, height):
-    for filename in args.images:
-        image: Image.Image = Image.open(filename)
-        overlayImage: Image.Image = Image.new(image.mode, image.size, color=-1)
-        preppedImage: Image.Image = Image.blend(image, overlayImage, 0.35)
-        output = texelator.render(preppedImage, width, height)
-        print("\x1b8", end="")
-        print(output)
-
-
-if __name__ == "__main__":
-    import argparse
-
-    argparser = argparse.ArgumentParser()
-    argparser.add_argument("-W", "--width", dest="width", default=80)
-    argparser.add_argument("-H", "--height", dest="height", default=40)
-    argparser.add_argument("images", nargs="+")
-    args: argparse.Namespace = argparser.parse_args()
-
-    texelator = Texelator()
-
-    width: int = int(args.width)
-    height: int = int(args.height)
-
-    print("\x1b7", end="")
-
-    import cProfile
-    cProfile.run("renderImagesFromArgs(width, height)", "profile")
-
-    texelator.saveTileCache()
-
-else:
-    pass
-
-
-# %%
