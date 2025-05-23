@@ -11,8 +11,16 @@ from .texel import Texel
 import pathlib
 thidDir = pathlib.Path(__file__).parent.absolute()
 
-# Characters used for ASCII rendering
-CHARS = r""" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
+# Characters used for ASCII and Unicode line/box/block rendering
+CHARS = (
+    r""" !\"#$%&'()*+,-./0123456789:;<=>?@"""
+    r"""ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"""
+    r"""abcdefghijklmnopqrstuvwxyz{|}~"""
+    "░▒▓█▌▐▀▄"
+    "─│┌┐└┘├┤┬┴┼"
+    "╭╮╯╰┏┓┗┛┣┫┳┻"
+    "╱╲╳◀▶▲▼◆◇○●"
+)
 
 
 class Texelator:

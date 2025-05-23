@@ -40,17 +40,22 @@ def main():
         if font is None:
             font = ImageFont.load_default()
 
-    widths = [font.getsize(c)[0] for c in CHARS]
-    heights = [font.getsize(c)[1] for c in CHARS]
+    measure_img = Image.new('L', (1, 1))
+    measure_draw = ImageDraw.Draw(measure_img)
+    bboxes = [measure_draw.textbbox((0, 0), c, font=font) for c in CHARS]
+    widths = [bx[2] - bx[0] for bx in bboxes]
+    heights = [bx[3] - bx[1] for bx in bboxes]
     char_width = max(widths)
     char_height = max(heights)
 
     img = Image.new('L', (char_width * len(CHARS), char_height), color=255)
     draw = ImageDraw.Draw(img)
     for i, c in enumerate(CHARS):
-        w, h = font.getsize(c)
-        x = i * char_width
-        y = (char_height - h) // 2
+        bx = bboxes[i]
+        w = bx[2] - bx[0]
+        h = bx[3] - bx[1]
+        x = i * char_width + (char_width - w) // 2 - bx[0]
+        y = (char_height - h) // 2 - bx[1]
         draw.text((x, y), c, fill=0, font=font)
 
     out_path = Path(args.output)
