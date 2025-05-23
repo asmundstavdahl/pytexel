@@ -19,8 +19,9 @@ class Texelator:
     def __init__(self):
 
         image: Image.Image = Image.open(f"{thidDir}/ascii.png").convert("L")
-        self.charWidth = 7
-        self.charHeight = 14
+        # Determine character cell size from the ascii.png glyph atlas
+        self.charWidth = image.width // len(CHARS)
+        self.charHeight = image.height
 
         self.texels = list()
 

@@ -85,12 +85,14 @@ Press Ctrl+C to exit.
 
 ## Utilities
 
+- `ascii-glyphs.py`: generate `ascii.png` font atlas from a monospace TrueType font using Pillow.
 - `ascii-print.py`: display the first 255 ASCII characters.
 - `view-profile.py`: analyze and display profiling data from the last run (`profile` file).
 
 ## Resources and Files
 
-- `ascii.png` / `ascii.xcf`: bitmap and GIMP source of character glyphs used for rendering.
+- `ascii.png` / `ascii.xcf`: bitmap and GIMP source of character glyphs used for rendering (regenerate via `ascii-glyphs.py`).
+- `ascii-glyphs.py`: programmatic generator for `ascii.png` using Pillow and a monospace font.
 - `texel.py`, `texelator.py`: core library code defining `Texel` and `Texelator`.
 - `texelate.py`, `texelate.sh`: command-line front ends.
 - `demo-pygame-*.py`: live terminal animation demos.
@@ -100,4 +102,5 @@ Press Ctrl+C to exit.
 
 ## Customizing Glyphs
 
-Edit `ascii.xcf` in GIMP and export to `ascii.png` to change the appearance of the rendered text art.
+Edit `ascii.xcf` in GIMP and export to `ascii.png` to change the appearance of the rendered text art,
+or regenerate `ascii.png` programmatically using `ascii-glyphs.py`.
