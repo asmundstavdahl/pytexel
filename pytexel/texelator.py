@@ -46,6 +46,8 @@ class Texelator:
             self._texel_chars = [t.char for t in self.texels]
         # cache for mapping tile patterns to characters
         self.tileCache: dict = self.loadTileCache()
+        self._empty_char = ' '
+        self._full_block_char = '█'
 
     def render(self, image: Image.Image, width: int, height: int) -> str:
         image2 = image.resize((width * self.charWidth, height * self.charHeight))
@@ -55,13 +57,22 @@ class Texelator:
             arr = arr.reshape((height, self.charHeight, width, self.charWidth))
             arr = arr.transpose(0, 2, 1, 3)
             arr = arr.reshape((height, width, self.charHeight * self.charWidth))
-            lines = []
-            for row in arr:
-                diff = np.abs(row[:, None, :] - self._texel_pixels[None, :, :])
+            h, w, n = arr.shape
+            flat = arr.reshape(h * w, n)
+            first = flat[:, 0]
+            uniform = np.all(flat == first[:, None], axis=1)
+            best_idx = np.full(h * w, -1, dtype=int)
+            idx_space = self._texel_chars.index(self._empty_char)
+            best_idx[uniform & (first == 255)] = idx_space
+            idx_block = self._texel_chars.index(self._full_block_char)
+            best_idx[uniform & (first == 0)] = idx_block
+            mask = best_idx < 0
+            if mask.any():
+                diff = np.abs(flat[mask, None, :] - self._texel_pixels[None, :, :])
                 costs = diff.sum(axis=2)
-                best = np.argmin(costs, axis=1)
-                lines.append(''.join(self._texel_chars[idx] for idx in best))
-            return '\n'.join(lines)
+                best_idx[mask] = np.argmin(costs, axis=1)
+            best_idx = best_idx.reshape(h, w)
+            return '\n'.join(''.join(self._texel_chars[idx] for idx in row) for row in best_idx)
 
         lines = []
         for y in range(height):
@@ -82,7 +93,14 @@ class Texelator:
         key = bytes(tile)
         if key in self.tileCache:
             return self.tileCache[key]
-
+        first = tile[0]
+        if all(p == first for p in tile):
+            if first == 255:
+                self.tileCache[key] = self._empty_char
+                return self._empty_char
+            if first == 0:
+                self.tileCache[key] = self._full_block_char
+                return self._full_block_char
         best = max(self.texels, key=lambda tx: tx.rateFitnessOfPixels(tile))
         result = best.char
         self.tileCache[key] = result
