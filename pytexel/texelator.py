@@ -44,8 +44,11 @@ class Texelator:
         if np is not None:
             self._texel_pixels = np.array([t.pixels for t in self.texels], dtype=np.int16)
             self._texel_chars = [t.char for t in self.texels]
-        # cache for mapping tile patterns to characters
-        self.tileCache: dict = self.loadTileCache()
+            size = self.charHeight * self.charWidth
+            self._cache_keys = np.empty((0, size), dtype=np.int16)
+            self._cache_idx = np.empty((0,), dtype=int)
+        else:
+            self._tile_cache_dict = {}
         self._empty_char = ' '
         self._full_block_char = '█'
 
@@ -90,33 +93,44 @@ class Texelator:
         return '\n'.join(lines)
 
     def getFittest(self, tile) -> str:
+        if np is not None:
+            arr = np.frombuffer(bytes(tile), dtype=np.uint8).astype(np.int16)
+            if self._cache_keys.shape[0] > 0:
+                hit = np.all(self._cache_keys == arr, axis=1)
+                if hit.any():
+                    return self._texel_chars[int(self._cache_idx[hit][0])]
+            first = tile[0]
+            if all(p == first for p in tile):
+                if first == 255:
+                    idx = self._texel_chars.index(self._empty_char)
+                    char = self._empty_char
+                elif first == 0:
+                    idx = self._texel_chars.index(self._full_block_char)
+                    char = self._full_block_char
+                else:
+                    idx = None
+                if idx is not None:
+                    self._cache_keys = np.vstack([self._cache_keys, arr])
+                    self._cache_idx = np.concatenate([self._cache_idx, [idx]])
+                    return char
+            diff = np.abs(self._texel_pixels - arr)
+            idx = int(np.argmin(diff.sum(axis=1)))
+            self._cache_keys = np.vstack([self._cache_keys, arr])
+            self._cache_idx = np.concatenate([self._cache_idx, [idx]])
+            return self._texel_chars[idx]
         key = bytes(tile)
-        if key in self.tileCache:
-            return self.tileCache[key]
+        if key in self._tile_cache_dict:
+            return self._tile_cache_dict[key]
         first = tile[0]
         if all(p == first for p in tile):
             if first == 255:
-                self.tileCache[key] = self._empty_char
+                self._tile_cache_dict[key] = self._empty_char
                 return self._empty_char
             if first == 0:
-                self.tileCache[key] = self._full_block_char
+                self._tile_cache_dict[key] = self._full_block_char
                 return self._full_block_char
         best = max(self.texels, key=lambda tx: tx.rateFitnessOfPixels(tile))
         result = best.char
-        self.tileCache[key] = result
+        self._tile_cache_dict[key] = result
         return result
 
-    def saveTileCache(self):
-        with open("tileCache.pkl", "wb") as f:
-            import pickle
-            pickle.dump(self.tileCache, f)
-            f.close()
-
-    def loadTileCache(self) -> dict:
-        try:
-            with open("tileCache.pkl", "rb") as f:
-                import pickle
-                return pickle.load(f)
-        except FileNotFoundError:
-            print("tileCache.pkl not found - starting clean")
-            return {}
