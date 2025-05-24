@@ -16,10 +16,10 @@ CHARS = (
     r""" !\"#$%&'()*+,-./0123456789:;<=>?@"""
     r"""ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"""
     r"""abcdefghijklmnopqrstuvwxyz{|}~"""
-    "░▒▓█▌▐▀▄"
-    "─│┌┐└┘├┤┬┴┼"
-    "╭╮╯╰┏┓┗┛┣┫┳┻"
-    "╱╲╳◀▶▲▼◆◇○●"
+#    "░▒▓▌▐▀▄"
+#    "─│┌┐└┘├┤┬┴┼"
+#    "╭╮╯╰┏┓┗┛┣┫┳┻"
+#    "╱╲╳◀▶▲▼◆◇○●"
 )
 
 
@@ -50,7 +50,6 @@ class Texelator:
         else:
             self._tile_cache_dict = {}
         self._empty_char = ' '
-        self._full_block_char = '█'
 
     def render(self, image: Image.Image, width: int, height: int) -> str:
         image2 = image.resize((width * self.charWidth, height * self.charHeight))
@@ -67,8 +66,6 @@ class Texelator:
             best_idx = np.full(h * w, -1, dtype=int)
             idx_space = self._texel_chars.index(self._empty_char)
             best_idx[uniform & (first == 255)] = idx_space
-            idx_block = self._texel_chars.index(self._full_block_char)
-            best_idx[uniform & (first == 0)] = idx_block
             mask = best_idx < 0
             if mask.any():
                 diff = np.abs(flat[mask, None, :] - self._texel_pixels[None, :, :])
@@ -104,9 +101,6 @@ class Texelator:
                 if first == 255:
                     idx = self._texel_chars.index(self._empty_char)
                     char = self._empty_char
-                elif first == 0:
-                    idx = self._texel_chars.index(self._full_block_char)
-                    char = self._full_block_char
                 else:
                     idx = None
                 if idx is not None:
@@ -126,9 +120,6 @@ class Texelator:
             if first == 255:
                 self._tile_cache_dict[key] = self._empty_char
                 return self._empty_char
-            if first == 0:
-                self._tile_cache_dict[key] = self._full_block_char
-                return self._full_block_char
         best = max(self.texels, key=lambda tx: tx.rateFitnessOfPixels(tile))
         result = best.char
         self._tile_cache_dict[key] = result
